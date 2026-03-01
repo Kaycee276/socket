@@ -20,7 +20,7 @@ const App = () => {
 	}, [darkMode]);
 
 	return (
-		<div className="min-h-screen bg-[var(--color-surface)] dark:bg-gray-950 transition-colors">
+		<div className="min-h-screen bg-(--color-surface) dark:bg-gray-950 transition-colors">
 			{/* ── Header ── */}
 			<header className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-0 z-10 transition-colors">
 				<div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between">
