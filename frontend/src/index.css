@@ -1,0 +1,75 @@
+@import url("https://fonts.googleapis.com/css2?family=Cascadia+Mono:ital,wght@0,200..700;1,200..700&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap");
+@import "tailwindcss";
+
+/* Enable class-based dark mode (.dark on <html>) */
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+	--font-sans: "Lato", sans-serif;
+	--font-mono: "Cascadia Mono", monospace;
+
+	/* Pink palette */
+	--color-pink-50: #fff0f7;
+	--color-pink-100: #ffe0ef;
+	--color-pink-200: #ffc2e0;
+	--color-pink-300: #ff94c8;
+	--color-pink-400: #ff56a8;
+	--color-pink-500: #ff2d8d;
+	--color-pink-600: #f0006e;
+	--color-pink-700: #c40059;
+	--color-pink-800: #a0004a;
+	--color-pink-900: #7a0039;
+	--color-pink-950: #4a001f;
+
+	/* White palette */
+	--color-white: #ffffff;
+	--color-off-white: #fdf8fb;
+	--color-white-muted: #f5eef4;
+
+	/* Brand shortcuts */
+	--color-primary: var(--color-pink-500);
+	--color-primary-light: var(--color-pink-300);
+	--color-primary-dark: var(--color-pink-700);
+	--color-surface: var(--color-off-white);
+}
+
+/* Flash animation for newly arrived rows */
+@keyframes rowFlash {
+	0% {
+		background-color: var(--color-pink-50);
+	}
+	100% {
+		background-color: transparent;
+	}
+}
+
+.row-flash {
+	animation: rowFlash 1.8s ease-out forwards;
+}
+
+/* Thin custom scrollbar */
+.scrollbar-thin {
+	scrollbar-width: thin;
+	scrollbar-color: var(--color-pink-200) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+	width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+	background-color: var(--color-pink-200);
+	border-radius: 9999px;
+}
+
+button {
+	cursor: pointer;
+}
+
+button:disabled {
+	cursor: not-allowed;
+}
