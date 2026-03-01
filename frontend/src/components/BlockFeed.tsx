@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useState } from "react";
 import { useDashboardStore } from "../store/useDashboardStore";
 import type { BlockSummary } from "../types";
 
@@ -16,8 +16,16 @@ function timeAgo(timestamp: number) {
 	return `${Math.floor(diff / 60)}m ago`;
 }
 
-const BlockRow = ({ block, isNew }: { block: BlockSummary; isNew: boolean }) => (
-	<tr className={`border-t border-gray-50 dark:border-gray-800 hover:bg-pink-50/60 dark:hover:bg-pink-950/20 transition-colors ${isNew ? "row-flash" : ""}`}>
+const BlockRow = ({
+	block,
+	isNew,
+}: {
+	block: BlockSummary;
+	isNew: boolean;
+}) => (
+	<tr
+		className={`border-t border-gray-50 dark:border-gray-800 hover:bg-pink-50/60 dark:hover:bg-pink-950/20 transition-colors ${isNew ? "row-flash" : ""}`}
+	>
 		<td className="px-5 py-3">
 			<a
 				href={`${EXPLORER}/block/${block.number}`}
@@ -37,7 +45,9 @@ const BlockRow = ({ block, isNew }: { block: BlockSummary; isNew: boolean }) => 
 					{block.txCount}
 				</span>
 			) : (
-				<span className="text-gray-300 dark:text-gray-600 font-mono text-xs">0</span>
+				<span className="text-gray-300 dark:text-gray-600 font-mono text-xs">
+					0
+				</span>
 			)}
 		</td>
 		<td className="px-4 py-3 text-right font-mono text-xs text-gray-400 dark:text-gray-500">
@@ -51,17 +61,24 @@ const BlockRow = ({ block, isNew }: { block: BlockSummary; isNew: boolean }) => 
 
 const BlockFeed = () => {
 	const blocks = useDashboardStore((s) => s.blocks);
-	const prevTopRef = useRef<string | null>(null);
+	const [prevTop, setPrevTop] = useState<string | null>(null);
 	const newestBlock = blocks[0]?.number ?? null;
-	const isNewTop = newestBlock !== prevTopRef.current;
-	if (isNewTop) prevTopRef.current = newestBlock;
+	const isNewTop = newestBlock !== null && newestBlock !== prevTop;
+
+	useEffect(() => {
+		if (newestBlock !== null) {
+			queueMicrotask(() => setPrevTop(newestBlock));
+		}
+	}, [newestBlock]);
 
 	return (
 		<div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
 			<div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
 				<div className="flex items-center gap-2">
 					<span className="w-2 h-2 rounded-full bg-pink-400 animate-pulse" />
-					<h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">Live Blocks</h2>
+					<h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
+						Live Blocks
+					</h2>
 				</div>
 				<span className="text-[11px] text-gray-400 dark:text-gray-500 font-mono bg-gray-50 dark:bg-gray-800 px-2 py-0.5 rounded-full">
 					{blocks.length} blocks
@@ -80,13 +97,19 @@ const BlockFeed = () => {
 							<tr className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest">
 								<th className="px-5 py-2.5 text-left font-semibold">Block</th>
 								<th className="px-4 py-2.5 text-center font-semibold">Txs</th>
-								<th className="px-4 py-2.5 text-right font-semibold">Gas used</th>
+								<th className="px-4 py-2.5 text-right font-semibold">
+									Gas used
+								</th>
 								<th className="px-5 py-2.5 text-right font-semibold">Age</th>
 							</tr>
 						</thead>
 						<tbody>
 							{blocks.map((b, i) => (
-								<BlockRow key={b.number} block={b} isNew={i === 0 && isNewTop} />
+								<BlockRow
+									key={b.number}
+									block={b}
+									isNew={i === 0 && isNewTop}
+								/>
 							))}
 						</tbody>
 					</table>

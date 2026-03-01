@@ -23,10 +23,12 @@ const App = () => {
 		<div className="min-h-screen bg-[var(--color-surface)] dark:bg-gray-950 transition-colors">
 			{/* ── Header ── */}
 			<header className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-0 z-10 transition-colors">
-				<div className="max-w-screen-xl mx-auto px-6 py-3.5 flex items-center justify-between">
+				<div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between">
 					<div className="flex items-center gap-3">
-						<div className="w-9 h-9 rounded-xl bg-gradient-to-br from-pink-400 to-pink-600 flex items-center justify-center shadow-sm">
-							<span className="text-white font-mono font-bold text-base leading-none">S</span>
+						<div className="w-9 h-9 rounded-xl bg-linear-to-br from-pink-400 to-pink-600 flex items-center justify-center shadow-sm">
+							<span className="text-white font-mono font-bold text-base leading-none">
+								S
+							</span>
 						</div>
 						<div>
 							<h1 className="text-base font-bold text-gray-900 dark:text-gray-100 leading-tight">
@@ -51,7 +53,9 @@ const App = () => {
 									: "bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900"
 							}`}
 						>
-							<span className={`w-1.5 h-1.5 rounded-full ${connected ? "bg-green-500 animate-pulse" : "bg-red-400"}`} />
+							<span
+								className={`w-1.5 h-1.5 rounded-full ${connected ? "bg-green-500 animate-pulse" : "bg-red-400"}`}
+							/>
 							{connected ? "Live" : "Disconnected"}
 						</span>
 
@@ -68,7 +72,7 @@ const App = () => {
 			</header>
 
 			{/* ── Content ── */}
-			<main className="max-w-screen-xl mx-auto px-6 py-6 space-y-5">
+			<main className="max-w-7xl mx-auto px-6 py-6 space-y-5">
 				<StatsBar />
 
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
