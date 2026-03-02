@@ -59,8 +59,27 @@ const BlockRow = ({
 	</tr>
 );
 
+const BlockSkeletonRow = () => (
+	<tr className="border-t border-gray-50 dark:border-gray-800">
+		<td className="px-5 py-3">
+			<div className="h-4 w-20 bg-gray-100 dark:bg-gray-800 animate-pulse rounded" />
+			<div className="h-3 w-32 bg-gray-100 dark:bg-gray-800 animate-pulse rounded mt-1.5" />
+		</td>
+		<td className="px-4 py-3 text-center">
+			<div className="h-5 w-8 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-full mx-auto" />
+		</td>
+		<td className="px-4 py-3 text-right">
+			<div className="h-3 w-16 bg-gray-100 dark:bg-gray-800 animate-pulse rounded ml-auto" />
+		</td>
+		<td className="px-5 py-3 text-right">
+			<div className="h-3 w-12 bg-gray-100 dark:bg-gray-800 animate-pulse rounded ml-auto" />
+		</td>
+	</tr>
+);
+
 const BlockFeed = () => {
 	const blocks = useDashboardStore((s) => s.blocks);
+	const connectionStatus = useDashboardStore((s) => s.connectionStatus);
 	const [prevTop, setPrevTop] = useState<string | null>(null);
 	const newestBlock = blocks[0]?.number ?? null;
 	const isNewTop = newestBlock !== null && newestBlock !== prevTop;
@@ -70,6 +89,8 @@ const BlockFeed = () => {
 			queueMicrotask(() => setPrevTop(newestBlock));
 		}
 	}, [newestBlock]);
+
+	const isConnecting = connectionStatus === "connecting";
 
 	return (
 		<div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
@@ -81,12 +102,28 @@ const BlockFeed = () => {
 					</h2>
 				</div>
 				<span className="text-[11px] text-gray-400 dark:text-gray-500 font-mono bg-gray-50 dark:bg-gray-800 px-2 py-0.5 rounded-full">
-					{blocks.length} blocks
+					{isConnecting ? "—" : `${blocks.length} blocks`}
 				</span>
 			</div>
 
 			<div className="overflow-y-auto max-h-80 scrollbar-thin">
-				{blocks.length === 0 ? (
+				{isConnecting ? (
+					<table className="w-full text-sm">
+						<thead className="sticky top-0 bg-gray-50/90 dark:bg-gray-800/90 backdrop-blur-sm">
+							<tr className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+								<th className="px-5 py-2.5 text-left font-semibold">Block</th>
+								<th className="px-4 py-2.5 text-center font-semibold">Txs</th>
+								<th className="px-4 py-2.5 text-right font-semibold">Gas used</th>
+								<th className="px-5 py-2.5 text-right font-semibold">Age</th>
+							</tr>
+						</thead>
+						<tbody>
+							{Array.from({ length: 6 }).map((_, i) => (
+								<BlockSkeletonRow key={i} />
+							))}
+						</tbody>
+					</table>
+				) : blocks.length === 0 ? (
 					<div className="flex flex-col items-center justify-center py-12 text-gray-300 dark:text-gray-600 gap-2">
 						<span className="text-3xl">◻</span>
 						<p className="text-sm">Waiting for blocks…</p>

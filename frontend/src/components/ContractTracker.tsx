@@ -16,6 +16,23 @@ function isValidAddress(addr: string) {
 	return /^0x[0-9a-fA-F]{40}$/.test(addr);
 }
 
+const ContractSkeletonRow = () => (
+	<tr className="border-t border-gray-50 dark:border-gray-800">
+		<td className="px-5 py-2.5">
+			<div className="h-3 w-14 bg-gray-100 dark:bg-gray-800 animate-pulse rounded" />
+		</td>
+		<td className="px-3 py-2.5">
+			<div className="h-3 w-20 bg-gray-100 dark:bg-gray-800 animate-pulse rounded" />
+		</td>
+		<td className="px-3 py-2.5">
+			<div className="h-3 w-24 bg-gray-100 dark:bg-gray-800 animate-pulse rounded" />
+		</td>
+		<td className="px-5 py-2.5">
+			<div className="h-3 w-16 bg-gray-100 dark:bg-gray-800 animate-pulse rounded" />
+		</td>
+	</tr>
+);
+
 const ContractTracker = () => {
 	const [input, setInput] = useState("");
 	const [inputError, setInputError] = useState("");
@@ -23,6 +40,7 @@ const ContractTracker = () => {
 	const watchedContracts = useDashboardStore((s) => s.watchedContracts);
 	const contractError = useDashboardStore((s) => s.contractError);
 	const setContractError = useDashboardStore((s) => s.setContractError);
+	const connectionStatus = useDashboardStore((s) => s.connectionStatus);
 
 	// Filter the global reactivity events by watched contract addresses
 	const events = useDashboardStore((s) => s.events);
@@ -37,6 +55,8 @@ const ContractTracker = () => {
 			),
 		[events, watchedSet],
 	);
+
+	const isConnecting = connectionStatus === "connecting";
 
 	const handleWatch = () => {
 		setInputError("");
@@ -76,7 +96,7 @@ const ContractTracker = () => {
 					</span>
 				</div>
 				<span className="text-[11px] text-gray-400 dark:text-gray-500 font-mono bg-gray-50 dark:bg-gray-800 px-2 py-0.5 rounded-full">
-					{watchedContracts.length} active
+					{isConnecting ? "—" : `${watchedContracts.length} active`}
 				</span>
 			</div>
 
@@ -139,7 +159,23 @@ const ContractTracker = () => {
 
 			{/* Event feed */}
 			<div className="overflow-y-auto max-h-56 scrollbar-thin">
-				{contractEvents.length === 0 ? (
+				{isConnecting ? (
+					<table className="w-full text-xs font-mono">
+						<thead className="sticky top-0 bg-gray-50/90 dark:bg-gray-800/90 backdrop-blur-sm">
+							<tr className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+								<th className="px-5 py-2 text-left font-semibold">Time</th>
+								<th className="px-3 py-2 text-left font-semibold">Contract</th>
+								<th className="px-3 py-2 text-left font-semibold">Event sig</th>
+								<th className="px-5 py-2 text-left font-semibold">Data</th>
+							</tr>
+						</thead>
+						<tbody>
+							{Array.from({ length: 4 }).map((_, i) => (
+								<ContractSkeletonRow key={i} />
+							))}
+						</tbody>
+					</table>
+				) : contractEvents.length === 0 ? (
 					<div className="flex flex-col items-center justify-center py-10 gap-1 text-gray-300 dark:text-gray-600">
 						<p className="text-sm">
 							{watchedContracts.length === 0

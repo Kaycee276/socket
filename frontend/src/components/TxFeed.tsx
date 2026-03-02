@@ -55,8 +55,30 @@ const TxRow = ({ tx }: { tx: TxSummary }) => {
 	);
 };
 
+const TxSkeletonRow = () => (
+	<tr className="border-t border-gray-50 dark:border-gray-800">
+		<td className="px-5 py-3">
+			<div className="h-3 w-28 bg-gray-100 dark:bg-gray-800 animate-pulse rounded" />
+			<div className="h-3 w-16 bg-gray-100 dark:bg-gray-800 animate-pulse rounded mt-1.5" />
+		</td>
+		<td className="px-4 py-3">
+			<div className="flex items-center gap-1.5">
+				<div className="h-5 w-16 bg-gray-100 dark:bg-gray-800 animate-pulse rounded" />
+				<div className="h-3 w-3 bg-gray-100 dark:bg-gray-800 animate-pulse rounded" />
+				<div className="h-5 w-16 bg-gray-100 dark:bg-gray-800 animate-pulse rounded" />
+			</div>
+		</td>
+		<td className="px-5 py-3 text-right">
+			<div className="h-3 w-14 bg-gray-100 dark:bg-gray-800 animate-pulse rounded ml-auto" />
+		</td>
+	</tr>
+);
+
 const TxFeed = () => {
 	const txs = useDashboardStore((s) => s.txs);
+	const connectionStatus = useDashboardStore((s) => s.connectionStatus);
+
+	const isConnecting = connectionStatus === "connecting";
 
 	return (
 		<div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
@@ -66,12 +88,27 @@ const TxFeed = () => {
 					<h2 className="font-semibold text-gray-800 dark:text-gray-200 text-sm">Transactions</h2>
 				</div>
 				<span className="text-[11px] text-gray-400 dark:text-gray-500 font-mono bg-gray-50 dark:bg-gray-800 px-2 py-0.5 rounded-full">
-					{txs.length} txs
+					{isConnecting ? "—" : `${txs.length} txs`}
 				</span>
 			</div>
 
 			<div className="overflow-y-auto max-h-80 scrollbar-thin">
-				{txs.length === 0 ? (
+				{isConnecting ? (
+					<table className="w-full text-sm">
+						<thead className="sticky top-0 bg-gray-50/90 dark:bg-gray-800/90 backdrop-blur-sm">
+							<tr className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+								<th className="px-5 py-2.5 text-left font-semibold">Hash</th>
+								<th className="px-4 py-2.5 text-left font-semibold">From → To</th>
+								<th className="px-5 py-2.5 text-right font-semibold">Value</th>
+							</tr>
+						</thead>
+						<tbody>
+							{Array.from({ length: 6 }).map((_, i) => (
+								<TxSkeletonRow key={i} />
+							))}
+						</tbody>
+					</table>
+				) : txs.length === 0 ? (
 					<div className="flex flex-col items-center justify-center py-12 text-gray-300 dark:text-gray-600 gap-2">
 						<span className="text-3xl">◫</span>
 						<p className="text-sm">Waiting for transactions…</p>

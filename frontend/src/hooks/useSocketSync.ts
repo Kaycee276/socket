@@ -4,7 +4,7 @@ import { useDashboardStore } from "../store/useDashboardStore";
 import type { BlockSummary, TxSummary, ReactivityEvent, Stats } from "../types";
 
 export function useSocketSync() {
-	const setConnected = useDashboardStore((s) => s.setConnected);
+	const setConnectionStatus = useDashboardStore((s) => s.setConnectionStatus);
 	const setStats = useDashboardStore((s) => s.setStats);
 	const addBlock = useDashboardStore((s) => s.addBlock);
 	const addTxBatch = useDashboardStore((s) => s.addTxBatch);
@@ -14,8 +14,9 @@ export function useSocketSync() {
 	const setContractError = useDashboardStore((s) => s.setContractError);
 
 	useEffect(() => {
-		socket.on("connect", () => setConnected(true));
-		socket.on("disconnect", () => setConnected(false));
+		socket.on("connect", () => setConnectionStatus("connected"));
+		socket.on("disconnect", () => setConnectionStatus("disconnected"));
+		socket.on("connect_error", () => setConnectionStatus("disconnected"));
 		socket.on(
 			"init",
 			(data: {
@@ -23,7 +24,27 @@ export function useSocketSync() {
 				txs: TxSummary[];
 				events: ReactivityEvent[];
 				watchedContracts: string[];
-			}) => initHistory(data),
+			}) => {
+				initHistory(data);
+				// Re-watch any contracts the server lost (e.g. after a restart)
+				const stored: string[] = (() => {
+					try {
+						return JSON.parse(
+							localStorage.getItem("watchedContracts") ?? "[]",
+						) as string[];
+					} catch {
+						return [];
+					}
+				})();
+				const serverKnows = new Set(
+					data.watchedContracts.map((c) => c.toLowerCase()),
+				);
+				stored.forEach((addr) => {
+					if (!serverKnows.has(addr.toLowerCase())) {
+						socket.emit("contract:watch", addr);
+					}
+				});
+			},
 		);
 		socket.on("stats", (data: Stats) => setStats(data));
 		socket.on("block:new", (block: BlockSummary) => addBlock(block));
@@ -36,7 +57,7 @@ export function useSocketSync() {
 
 		if (socket.connected) {
 			socket.emit("request-init");
-			setConnected(true);
+			setConnectionStatus("connected");
 		} else {
 			socket.connect();
 		}
@@ -44,6 +65,7 @@ export function useSocketSync() {
 		return () => {
 			socket.off("connect");
 			socket.off("disconnect");
+			socket.off("connect_error");
 			socket.off("init");
 			socket.off("stats");
 			socket.off("block:new");

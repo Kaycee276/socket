@@ -39,8 +39,19 @@ const EventRow = ({ ev }: { ev: ReactivityEvent }) => (
 	</div>
 );
 
+const EventSkeletonRow = ({ wide }: { wide?: boolean }) => (
+	<div className="flex items-center gap-5 px-5 py-2.5 border-t border-pink-950">
+		<div className="h-3 w-14 bg-pink-950/80 animate-pulse rounded shrink-0" />
+		<div className={`h-3 ${wide ? "w-48" : "w-32"} bg-pink-950/80 animate-pulse rounded`} />
+		<div className="h-3 w-24 bg-pink-950/80 animate-pulse rounded" />
+	</div>
+);
+
 const EventLog = () => {
 	const events = useDashboardStore((s) => s.events);
+	const connectionStatus = useDashboardStore((s) => s.connectionStatus);
+
+	const isConnecting = connectionStatus === "connecting";
 
 	return (
 		<div className="rounded-2xl shadow-sm border border-pink-950 overflow-hidden bg-pink-950">
@@ -64,13 +75,21 @@ const EventLog = () => {
 					</div>
 				</div>
 				<span className="text-[11px] text-pink-800 font-mono">
-					{events.length} events
+					{isConnecting ? "—" : `${events.length} events`}
 				</span>
 			</div>
 
 			{/* Event stream */}
 			<div className="overflow-y-auto max-h-64 scrollbar-thin">
-				{events.length === 0 ? (
+				{isConnecting ? (
+					<>
+						<EventSkeletonRow wide />
+						<EventSkeletonRow />
+						<EventSkeletonRow wide />
+						<EventSkeletonRow />
+						<EventSkeletonRow wide />
+					</>
+				) : events.length === 0 ? (
 					<div className="flex flex-col items-center justify-center py-10 gap-2">
 						<p className="font-mono text-xs text-pink-900">
 							▸ listening for on-chain events via Somnia Reactivity SDK…

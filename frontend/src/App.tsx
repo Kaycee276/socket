@@ -10,7 +10,7 @@ import ContractTracker from "./components/ContractTracker";
 const App = () => {
 	useSocketSync();
 
-	const connected = useDashboardStore((s) => s.connected);
+	const connectionStatus = useDashboardStore((s) => s.connectionStatus);
 	const darkMode = useDashboardStore((s) => s.darkMode);
 	const toggleDarkMode = useDashboardStore((s) => s.toggleDarkMode);
 
@@ -46,18 +46,24 @@ const App = () => {
 							Somnia Testnet · 50312
 						</span>
 
-						<span
-							className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold border ${
-								connected
-									? "bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 border-green-200 dark:border-green-900"
-									: "bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900"
-							}`}
-						>
-							<span
-								className={`w-1.5 h-1.5 rounded-full ${connected ? "bg-green-500 animate-pulse" : "bg-red-400"}`}
-							/>
-							{connected ? "Live" : "Disconnected"}
-						</span>
+						{connectionStatus === "connecting" && (
+							<span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold border bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800">
+								<span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+								Connecting…
+							</span>
+						)}
+						{connectionStatus === "connected" && (
+							<span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold border bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 border-green-200 dark:border-green-900">
+								<span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+								Live
+							</span>
+						)}
+						{connectionStatus === "disconnected" && (
+							<span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold border bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900">
+								<span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+								Disconnected · retrying
+							</span>
+						)}
 
 						{/* Dark mode toggle */}
 						<button

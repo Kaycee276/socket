@@ -1,9 +1,11 @@
 import { create } from "zustand";
 import type { BlockSummary, TxSummary, ReactivityEvent, Stats } from "../types";
 
+export type ConnectionStatus = "connecting" | "connected" | "disconnected";
+
 type DashboardState = {
 	// Connection
-	connected: boolean;
+	connectionStatus: ConnectionStatus;
 
 	// UI
 	darkMode: boolean;
@@ -19,7 +21,7 @@ type DashboardState = {
 	contractError: string | null;
 
 	// Actions
-	setConnected: (connected: boolean) => void;
+	setConnectionStatus: (status: ConnectionStatus) => void;
 	toggleDarkMode: () => void;
 	setStats: (stats: Stats) => void;
 	addBlock: (block: BlockSummary) => void;
@@ -37,17 +39,32 @@ type DashboardState = {
 
 const savedDark = localStorage.getItem("darkMode") === "true";
 
+const LS_CONTRACTS_KEY = "watchedContracts";
+
+function loadContractsFromStorage(): string[] {
+	try {
+		const raw = localStorage.getItem(LS_CONTRACTS_KEY);
+		return raw ? (JSON.parse(raw) as string[]) : [];
+	} catch {
+		return [];
+	}
+}
+
+function saveContractsToStorage(contracts: string[]): void {
+	localStorage.setItem(LS_CONTRACTS_KEY, JSON.stringify(contracts));
+}
+
 export const useDashboardStore = create<DashboardState>((set) => ({
-	connected: false,
+	connectionStatus: "connecting",
 	darkMode: savedDark,
 	stats: { blockNumber: "—", tps: 0, gasPrice: "—" },
 	blocks: [],
 	txs: [],
 	events: [],
-	watchedContracts: [],
+	watchedContracts: loadContractsFromStorage(),
 	contractError: null,
 
-	setConnected: (connected) => set({ connected }),
+	setConnectionStatus: (connectionStatus) => set({ connectionStatus }),
 
 	toggleDarkMode: () =>
 		set((state) => {
@@ -67,10 +84,21 @@ export const useDashboardStore = create<DashboardState>((set) => ({
 	addEvent: (event) =>
 		set((state) => ({ events: [event, ...state.events].slice(0, 100) })),
 
-	initHistory: ({ blocks, txs, events, watchedContracts }) =>
-		set({ blocks, txs, events, watchedContracts }),
+	initHistory: ({ blocks, txs, events, watchedContracts }) => {
+		// Merge server list with localStorage so nothing is lost on server restart
+		const stored = loadContractsFromStorage();
+		const merged = [
+			...new Set([...stored, ...watchedContracts].map((c) => c.toLowerCase())),
+		];
+		saveContractsToStorage(merged);
+		set({ blocks, txs, events, watchedContracts: merged });
+	},
 
-	setWatchedContracts: (watchedContracts) => set({ watchedContracts }),
+	setWatchedContracts: (contracts) => {
+		const unique = [...new Set(contracts.map((c) => c.toLowerCase()))];
+		saveContractsToStorage(unique);
+		set({ watchedContracts: unique });
+	},
 
 	setContractError: (contractError) => set({ contractError }),
 }));
