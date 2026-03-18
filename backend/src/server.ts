@@ -12,5 +12,5 @@ app.use(express.json());
 export const httpServer = createServer(app);
 
 export const io = new Server(httpServer, {
-	cors: { origin: CLIENT_URL },
+  cors: { origin: CLIENT_URL },
 });
